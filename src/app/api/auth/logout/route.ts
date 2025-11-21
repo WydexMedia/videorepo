@@ -11,7 +11,18 @@ export async function POST(req: NextRequest) {
     }
 
     const { user } = authResult;
-    const userDoc = await User.findById(user._id);
+    if (!user || typeof user !== 'object' || !('_id' in user)) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          message: 'Invalid user data',
+          errors: ['INVALID_USER'],
+        },
+        { status: 401 }
+      );
+    }
+    const userId = typeof user._id === 'string' ? user._id : String(user._id);
+    const userDoc = await User.findById(userId);
     
     if (!userDoc) {
       return NextResponse.json(
@@ -32,8 +43,9 @@ export async function POST(req: NextRequest) {
       status: 'success',
       message: 'Logout successful',
     });
-  } catch (error: any) {
-    logger.error('Logout error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Logout error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

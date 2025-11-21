@@ -2,7 +2,6 @@
  * Logger utility that respects NODE_ENV
  */
 
-const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const LOG_LEVELS = {
@@ -22,27 +21,27 @@ const getLogLevel = () => {
 const currentLogLevel = getLogLevel();
 
 export const logger = {
-  error: (...args: any[]) => {
+  error: (...args: unknown[]) => {
     if (currentLogLevel >= LOG_LEVELS.ERROR) {
       console.error(...args);
     }
   },
-  warn: (...args: any[]) => {
+  warn: (...args: unknown[]) => {
     if (currentLogLevel >= LOG_LEVELS.WARN) {
       console.warn(...args);
     }
   },
-  info: (...args: any[]) => {
+  info: (...args: unknown[]) => {
     if (currentLogLevel >= LOG_LEVELS.INFO) {
       console.log(...args);
     }
   },
-  debug: (...args: any[]) => {
+  debug: (...args: unknown[]) => {
     if (currentLogLevel >= LOG_LEVELS.DEBUG) {
       console.log(...args);
     }
   },
-  log: (...args: any[]) => {
+  log: (...args: unknown[]) => {
     if (currentLogLevel >= LOG_LEVELS.INFO) {
       console.log(...args);
     }

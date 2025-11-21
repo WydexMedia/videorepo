@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
@@ -54,11 +54,18 @@ export default function LoginPage() {
         // Extract specific error message from errors array if available
         let errorMessage = response.message || "Failed to send OTP";
         if (response.errors && response.errors.length > 0) {
-          const phoneError = response.errors.find((err: any) => err.path === 'phoneNumber');
-          if (phoneError && phoneError.msg) {
-            errorMessage = phoneError.msg;
-          } else if (response.errors[0]?.msg) {
-            errorMessage = response.errors[0].msg;
+          const firstError = response.errors[0];
+          if (typeof firstError === 'object' && firstError !== null && 'path' in firstError) {
+            const phoneError = response.errors.find((err): err is { path?: string; msg?: string } => 
+              typeof err === 'object' && err !== null && 'path' in err && (err as { path?: string }).path === 'phoneNumber'
+            );
+            if (phoneError && 'msg' in phoneError && phoneError.msg) {
+              errorMessage = phoneError.msg;
+            } else if ('msg' in firstError && firstError.msg) {
+              errorMessage = firstError.msg;
+            }
+          } else if (typeof firstError === 'string') {
+            errorMessage = firstError;
           }
         }
         setError(errorMessage);
@@ -74,7 +81,7 @@ export default function LoginPage() {
   }, [phone]);
 
   // Handle OTP verification success
-  const handleOTPSuccess = useCallback((token: string, user: any) => {
+  const handleOTPSuccess = useCallback((token: string, user: { profile?: { firstName?: string; lastName?: string }; id?: string }) => {
     if (!phoneData) return;
 
     // Check if registration is required
@@ -204,7 +211,7 @@ export default function LoginPage() {
           {/* Additional Links */}
           <div className="text-center pt-2 sm:pt-4">
             <p className="text-gray-600 text-xs sm:text-sm">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <a href="#" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
                 Create account
               </a>

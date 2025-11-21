@@ -7,13 +7,34 @@ import { logger } from '@/lib/logger';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 export interface AuthRequest extends NextRequest {
-  user?: any;
+  user?: {
+    _id: string;
+    phoneNumber: string;
+    countryCode: string;
+    fullPhoneNumber: string;
+    isVerified: boolean;
+    isActive: boolean;
+    tokenVersion?: number;
+    profile?: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      place?: string;
+      avatar?: string;
+    };
+    preferences?: {
+      language?: string;
+      notifications?: boolean;
+    };
+    lastLogin?: Date;
+    createdAt?: Date;
+  };
 }
 
 /**
  * Protect routes - require authentication
  */
-export async function protect(req: NextRequest): Promise<{ user: any } | NextResponse> {
+export async function protect(req: NextRequest): Promise<{ user: Awaited<ReturnType<typeof User.findById>> } | NextResponse> {
   try {
     let token: string | null = null;
 
@@ -69,11 +90,12 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
       );
     }
 
-    let decoded: any;
+    let decoded: jwt.JwtPayload & { id: string; tokenVersion?: number };
     try {
-      decoded = jwt.verify(token, process.env.JWT_SECRET);
-    } catch (jwtError: any) {
-      if (jwtError.name === 'TokenExpiredError') {
+      decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload & { id: string; tokenVersion?: number };
+    } catch (jwtError: unknown) {
+      const jwtErr = jwtError as { name?: string };
+      if (jwtErr.name === 'TokenExpiredError') {
         return NextResponse.json(
           {
             status: 'error',
@@ -84,7 +106,7 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
         );
       }
 
-      if (jwtError.name === 'JsonWebTokenError') {
+      if (jwtErr.name === 'JsonWebTokenError') {
         return NextResponse.json(
           {
             status: 'error',
@@ -95,7 +117,7 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
         );
       }
 
-      if (jwtError.name === 'NotBeforeError') {
+      if (jwtErr.name === 'NotBeforeError') {
         return NextResponse.json(
           {
             status: 'error',
@@ -106,7 +128,7 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
         );
       }
 
-      throw jwtError;
+      throw jwtErr;
     }
 
     if (!decoded || !decoded.id) {
@@ -171,8 +193,9 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
     }
 
     return { user };
-  } catch (error: any) {
-    logger.error('Auth middleware error:', error?.message || 'Unknown authentication error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown authentication error';
+    logger.error('Auth middleware error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',
@@ -187,7 +210,7 @@ export async function protect(req: NextRequest): Promise<{ user: any } | NextRes
 /**
  * Optional auth - doesn't require authentication but adds user if token is valid
  */
-export async function optionalAuth(req: NextRequest): Promise<any | null> {
+export async function optionalAuth(req: NextRequest): Promise<Awaited<ReturnType<typeof User.findById>> | null> {
   try {
     let token: string | null = null;
 
@@ -196,7 +219,7 @@ export async function optionalAuth(req: NextRequest): Promise<any | null> {
       if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
         token = authHeader.substring(7).trim();
       }
-    } catch (headerError) {
+    } catch {
       return null;
     }
 
@@ -211,7 +234,7 @@ export async function optionalAuth(req: NextRequest): Promise<any | null> {
     const tokenParts = token.split('.');
     if (tokenParts && tokenParts.length === 3) {
       try {
-        const decoded: any = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET) as jwt.JwtPayload & { id: string; tokenVersion?: number };
 
         if (
           decoded &&
@@ -231,20 +254,23 @@ export async function optionalAuth(req: NextRequest): Promise<any | null> {
                 return user;
               }
             }
-          } catch (dbError: any) {
-            logger.debug('Optional auth - database error:', dbError.message);
+          } catch (dbError: unknown) {
+            const dbErrMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+            logger.debug('Optional auth - database error:', dbErrMessage);
           }
         }
-      } catch (jwtError: any) {
-        if (isDevelopment && jwtError && jwtError.name) {
-          logger.debug('Optional auth - token verification error:', jwtError.message);
+      } catch (jwtError: unknown) {
+        const jwtErr = jwtError as { name?: string; message?: string };
+        if (isDevelopment && jwtErr && jwtErr.name) {
+          logger.debug('Optional auth - token verification error:', jwtErr.message || 'Unknown error');
         }
       }
     }
 
     return null;
-  } catch (error: any) {
-    logger.error('Optional auth - unexpected error:', error?.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Optional auth - unexpected error:', errorMessage);
     return null;
   }
 }

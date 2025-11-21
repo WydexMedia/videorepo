@@ -12,8 +12,8 @@ const generateToken = (id: string, tokenVersion: number = 0) => {
     throw new Error('JWT_SECRET is not configured');
   }
   return jwt.sign({ id, tokenVersion }, process.env.JWT_SECRET, {
-    expiresIn: expiresIn,
-  });
+    expiresIn,
+  } as jwt.SignOptions);
 };
 
 export async function POST(req: NextRequest) {
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    let user = await User.findOne({
+    const user = await User.findOne({
       fullPhoneNumber: formattedNumber,
       isActive: true,
     });
@@ -171,10 +171,11 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
-    logger.error('Register error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Register error:', errorMessage);
 
-    if (error.code === 11000) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
       return NextResponse.json(
         {
           status: 'error',

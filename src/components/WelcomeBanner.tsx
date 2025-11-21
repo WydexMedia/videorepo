@@ -17,7 +17,7 @@ function WelcomeBanner({ userName, progress }: WelcomeBannerProps) {
         <div className="flex-1 text-white z-10">
           <h1 className="text-3xl font-bold mb-2">Welcome back, {userName}!</h1>
           <p className="text-blue-50 mb-6">
-            You've learned {progress}% of your goal this week Keep it<br />up and improve your progress!
+            You&apos;ve learned {progress}% of your goal this week Keep it<br />up and improve your progress!
           </p>
           <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-all duration-200 border border-white/30">
             GO BACK TO THE LESSONS

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { protect } from '@/lib/middleware/auth';
 import User from '@/models/User';
 import { logger } from '@/lib/logger';
+import { IUser } from '@/models/User';
 
 export async function DELETE(req: NextRequest) {
   try {
@@ -11,7 +12,9 @@ export async function DELETE(req: NextRequest) {
     }
 
     const { user } = authResult;
-    const userDoc = await User.findById(user._id);
+    
+    // Type assertion: protect() ensures user is a valid User document if it returns { user }
+    const userDoc = await User.findById((user as IUser)._id);
 
     if (!userDoc) {
       return NextResponse.json(
@@ -26,7 +29,7 @@ export async function DELETE(req: NextRequest) {
 
     userDoc.isActive = false;
     userDoc.lastLogout = new Date();
-    userDoc.lastLogin = null;
+    userDoc.lastLogin = undefined;
     userDoc.incrementTokenVersion();
     await userDoc.save();
 
@@ -34,8 +37,9 @@ export async function DELETE(req: NextRequest) {
       status: 'success',
       message: 'Account deactivated successfully',
     });
-  } catch (error: any) {
-    logger.error('Deactivate account error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Deactivate account error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

@@ -173,7 +173,7 @@ userSchema.methods.updateLastLogin = function () {
 // Method to update last logout
 userSchema.methods.updateLastLogout = function () {
   this.lastLogout = new Date();
-  this.lastLogin = null;
+  this.lastLogin = undefined;
 };
 
 // Method to increment token version

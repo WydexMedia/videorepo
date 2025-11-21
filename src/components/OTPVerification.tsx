@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 interface OTPVerificationProps {
   phoneData: PhoneData;
   onBack: () => void;
-  onSuccess: (token: string, user: any) => void;
+  onSuccess: (token: string, user: { profile?: { firstName?: string; lastName?: string }; id?: string; requiresRegistration?: boolean }) => void;
 }
 
 export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVerificationProps) {
@@ -49,7 +49,7 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
       if (response.status === 'success' && response.data) {
         // Check if registration is required
         const dataFlag = response.data.requiresRegistration;
-        const rootFlag = (response as any).requiresRegistration;
+        const rootFlag = (response as { requiresRegistration?: boolean }).requiresRegistration;
         
         const requiresRegistration = 
           dataFlag === true ||
@@ -61,7 +61,7 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
 
         if (requiresRegistration) {
           // Don't store token/user, let parent handle registration
-          onSuccess("", null);
+          onSuccess("", { requiresRegistration: true });
         } else {
           // Store token and user data, then call success
           localStorage.setItem('auth_token', response.data.token);

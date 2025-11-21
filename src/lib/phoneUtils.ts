@@ -22,7 +22,7 @@ export const validatePhoneNumber = (phoneNumber: string, countryCode: string = '
         error: 'Invalid phone number format',
       };
     }
-  } catch (error) {
+  } catch {
     return {
       isValid: false,
       error: 'Error validating phone number',
@@ -54,7 +54,7 @@ export const extractCountryCode = (fullPhoneNumber: string) => {
         error: 'Invalid phone number format',
       };
     }
-  } catch (error) {
+  } catch {
     return {
       isValid: false,
       error: 'Error extracting country code',

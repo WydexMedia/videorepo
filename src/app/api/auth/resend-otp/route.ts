@@ -34,6 +34,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { formattedNumber } = phoneValidation;
+    
+    if (!formattedNumber) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          message: 'Invalid phone number format',
+          errors: ['INVALID_PHONE_NUMBER'],
+        },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -78,8 +89,9 @@ export async function POST(req: NextRequest) {
         expiresIn: '10 minutes',
       },
     });
-  } catch (error: any) {
-    logger.error('Resend OTP error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Resend OTP error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

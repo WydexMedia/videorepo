@@ -8,8 +8,6 @@ import { logger } from '@/lib/logger';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-
 let flowlineConnection: mongoose.Connection | null = null;
 
 const connectFlowlineDB = async () => {
@@ -18,7 +16,7 @@ const connectFlowlineDB = async () => {
     if (!process.env.FLOWLINE_MONGODB_URI) return null;
     flowlineConnection = await mongoose.createConnection(process.env.FLOWLINE_MONGODB_URI);
     return flowlineConnection;
-  } catch (error: any) {
+  } catch {
     return null;
   }
 };
@@ -94,7 +92,7 @@ const findFlowlineStudent = async (phoneNumber: string, phoneE164: string, phone
     });
     const student = await Student.findOne({ $or: uniqueQueries }).lean();
     return student;
-  } catch (error: any) {
+  } catch {
     return null;
   }
 };
@@ -105,8 +103,8 @@ const generateToken = (id: string, tokenVersion: number = 0) => {
     throw new Error('JWT_SECRET is not configured');
   }
   return jwt.sign({ id, tokenVersion }, process.env.JWT_SECRET, {
-    expiresIn: expiresIn,
-  });
+    expiresIn,
+  } as jwt.SignOptions);
 };
 
 export async function POST(req: NextRequest) {
@@ -148,7 +146,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { formattedNumber } = phoneValidation;
+    const { formattedNumber, phoneNumber: validatedPhoneNumber } = phoneValidation;
+    
+    if (!validatedPhoneNumber) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          message: 'Invalid phone number format',
+          errors: ['INVALID_PHONE_NUMBER'],
+        },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -188,15 +197,16 @@ export async function POST(req: NextRequest) {
     let isFlowlineStudent = false;
     try {
       flowlineStudent = await findFlowlineStudent(
-        phoneValidation.phoneNumber,
+        validatedPhoneNumber,
         formattedNumber,
-        phoneValidation.phoneNumber.replace(/[^\d]/g, '')
+        validatedPhoneNumber.replace(/[^\d]/g, '')
       );
       if (flowlineStudent) {
         isFlowlineStudent = true;
       }
-    } catch (error: any) {
-      console.error('Error fetching Flowline student:', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error fetching Flowline student:', errorMessage);
     }
 
     if (isFirstTimeLogin) {
@@ -225,12 +235,14 @@ export async function POST(req: NextRequest) {
 
     if (isFirstTimeLogin) {
       try {
-        const welcomeResult = await smsService.sendWelcomeMessage(formattedNumber);
-        if (!welcomeResult.success) {
+        const userName = user.profile?.firstName || 'User';
+        const welcomeResult = await smsService.sendWelcomeMessage(formattedNumber, userName);
+        if (!welcomeResult.success && 'error' in welcomeResult) {
           console.warn(`⚠️ Welcome message failed but login succeeded: ${welcomeResult.error}`);
         }
-      } catch (error: any) {
-        console.error(`⚠️ Error sending welcome message (non-critical):`, error.message);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`⚠️ Error sending welcome message (non-critical):`, errorMessage);
       }
     }
 
@@ -258,8 +270,9 @@ export async function POST(req: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
-    logger.error('Verify OTP error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Verify OTP error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

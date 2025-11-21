@@ -87,11 +87,18 @@ export default function RegistrationPage() {
         // Extract specific error message from errors array if available
         let errorMessage = response.message || "Registration failed. Please try again.";
         if (response.errors && response.errors.length > 0) {
-          const emailError = response.errors.find((err: any) => err.path === 'email');
-          if (emailError && emailError.msg) {
-            errorMessage = emailError.msg;
-          } else if (response.errors[0]?.msg) {
-            errorMessage = response.errors[0].msg;
+          const firstError = response.errors[0];
+          if (typeof firstError === 'object' && firstError !== null && 'path' in firstError) {
+            const emailError = response.errors.find((err): err is { path?: string; msg?: string } => 
+              typeof err === 'object' && err !== null && 'path' in err && (err as { path?: string }).path === 'email'
+            );
+            if (emailError && 'msg' in emailError && emailError.msg) {
+              errorMessage = emailError.msg;
+            } else if ('msg' in firstError && firstError.msg) {
+              errorMessage = firstError.msg;
+            }
+          } else if (typeof firstError === 'string') {
+            errorMessage = firstError;
           }
         }
         setError(errorMessage);

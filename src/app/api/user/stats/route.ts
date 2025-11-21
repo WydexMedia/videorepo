@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { protect } from '@/lib/middleware/auth';
 import { logger } from '@/lib/logger';
+import { IUser } from '@/models/User';
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,13 +11,14 @@ export async function GET(req: NextRequest) {
     }
 
     const { user } = authResult;
+    const userDoc = user as IUser;
 
     const stats = {
-      accountCreated: user.createdAt,
-      lastLogin: user.lastLogin,
-      isVerified: user.isVerified,
-      profileCompleted: !!(user.profile.firstName && user.profile.lastName),
-      hasEmail: !!user.profile.email,
+      accountCreated: userDoc.createdAt,
+      lastLogin: userDoc.lastLogin,
+      isVerified: userDoc.isVerified,
+      profileCompleted: !!(userDoc.profile.firstName && userDoc.profile.lastName),
+      hasEmail: !!userDoc.profile.email,
     };
 
     return NextResponse.json({
@@ -25,8 +27,9 @@ export async function GET(req: NextRequest) {
         stats,
       },
     });
-  } catch (error: any) {
-    logger.error('Get user stats error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Get user stats error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

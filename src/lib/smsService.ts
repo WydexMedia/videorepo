@@ -13,7 +13,8 @@ if (isTwilioConfigured) {
   client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 }
 
-export const sendOTP = async (phoneNumber: string, otp: string) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const sendOTP = async (phoneNumber: string, _otp: string) => {
   try {
     if (!client) {
       console.error('❌ Twilio client not initialized. Cannot send OTP');
@@ -44,16 +45,17 @@ export const sendOTP = async (phoneNumber: string, otp: string) => {
       status: message.status,
       devOTP: devOTP,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred while sending OTP';
     if (isDevelopment) {
-      console.error(`❌ Failed to send OTP to ${phoneNumber}:`, error.message);
+      console.error(`❌ Failed to send OTP to ${phoneNumber}:`, errorMessage);
     } else {
-      console.error('❌ Failed to send OTP:', error.message);
+      console.error('❌ Failed to send OTP:', errorMessage);
     }
 
     return {
       success: false,
-      error: error.message || 'Unknown error occurred while sending OTP',
+      error: errorMessage,
     };
   }
 };
@@ -85,24 +87,26 @@ export const sendWelcomeMessage = async (phoneNumber: string, userName: string =
       messageSid: message.sid,
       status: message.status,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred while sending welcome message';
     if (isDevelopment) {
-      console.error(`❌ Failed to send welcome message to ${phoneNumber}:`, error.message);
+      console.error(`❌ Failed to send welcome message to ${phoneNumber}:`, errorMessage);
     } else {
-      console.error('❌ Failed to send welcome message:', error.message);
+      console.error('❌ Failed to send welcome message:', errorMessage);
     }
 
     return {
       success: false,
-      error: error.message || 'Unknown error occurred while sending welcome message',
+      error: errorMessage,
     };
   }
 };
 
-const sendOTPMock = async (phoneNumber: string, otp: string) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const sendOTPMock = async (_phoneNumber: string, _otp: string) => {
   const devOTP = '000000';
   if (isDevelopment) {
-    console.log(`📱 [MOCK SMS] OTP for ${phoneNumber}: ${devOTP}`);
+    console.log(`📱 [MOCK SMS] OTP for ${_phoneNumber}: ${devOTP}`);
   }
   return {
     success: true,

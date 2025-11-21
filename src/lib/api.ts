@@ -3,11 +3,11 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // API Response Types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   status: 'success' | 'error';
   message: string;
   data?: T;
-  errors?: any[];
+  errors?: string[] | Array<{ path?: string; msg?: string }>;
 }
 
 export interface PhoneData {

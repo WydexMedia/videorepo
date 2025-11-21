@@ -77,27 +77,29 @@ export const sanitizePlace = (place: string | null | undefined): string => {
 const SAFE_PROFILE_FIELDS = ['firstName', 'lastName', 'email', 'place', 'avatar'];
 const SAFE_PREFERENCES_FIELDS = ['language', 'notifications'];
 
-export const safeProfile = (profile: any): Record<string, any> => {
+export const safeProfile = (profile: unknown): Record<string, unknown> => {
   if (!profile || typeof profile !== 'object') {
     return {};
   }
-  const safe: Record<string, any> = {};
+  const safe: Record<string, unknown> = {};
+  const profileObj = profile as Record<string, unknown>;
   for (const field of SAFE_PROFILE_FIELDS) {
-    if (profile.hasOwnProperty(field) && profile[field] !== undefined) {
-      safe[field] = profile[field];
+    if (profileObj.hasOwnProperty(field) && profileObj[field] !== undefined) {
+      safe[field] = profileObj[field];
     }
   }
   return safe;
 };
 
-export const safePreferences = (preferences: any): Record<string, any> => {
+export const safePreferences = (preferences: unknown): Record<string, unknown> => {
   if (!preferences || typeof preferences !== 'object') {
     return {};
   }
-  const safe: Record<string, any> = {};
+  const safe: Record<string, unknown> = {};
+  const preferencesObj = preferences as Record<string, unknown>;
   for (const field of SAFE_PREFERENCES_FIELDS) {
-    if (preferences.hasOwnProperty(field) && preferences[field] !== undefined) {
-      safe[field] = preferences[field];
+    if (preferencesObj.hasOwnProperty(field) && preferencesObj[field] !== undefined) {
+      safe[field] = preferencesObj[field];
     }
   }
   return safe;
@@ -128,14 +130,15 @@ export const escapeString = (input: string | null | undefined): string => {
   return escapeHtml(input);
 };
 
-const escapeProfile = (profile: any): Record<string, any> => {
+const escapeProfile = (profile: unknown): Record<string, unknown> => {
   if (!profile || typeof profile !== 'object') {
     return {};
   }
-  const escaped: Record<string, any> = {};
+  const escaped: Record<string, unknown> = {};
+  const profileObj = profile as Record<string, unknown>;
   for (const field of SAFE_PROFILE_FIELDS) {
-    if (profile.hasOwnProperty(field) && profile[field] !== undefined) {
-      const value = profile[field];
+    if (profileObj.hasOwnProperty(field) && profileObj[field] !== undefined) {
+      const value = profileObj[field];
       if (typeof value === 'string') {
         escaped[field] = escapeString(value);
       } else {
@@ -146,7 +149,7 @@ const escapeProfile = (profile: any): Record<string, any> => {
   return escaped;
 };
 
-export const safeProfileForOutput = (profile: any): Record<string, any> => {
+export const safeProfileForOutput = (profile: unknown): Record<string, unknown> => {
   const filtered = safeProfile(profile);
   return escapeProfile(filtered);
 };

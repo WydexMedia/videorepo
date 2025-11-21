@@ -5,10 +5,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, User, Phone, Calendar, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner";
-
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id?: string;
+    phoneNumber?: string;
+    countryCode?: string;
+    profile?: {
+      firstName?: string;
+      lastName?: string;
+    };
+    createdAt?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 

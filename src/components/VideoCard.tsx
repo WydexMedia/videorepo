@@ -22,7 +22,7 @@ interface VideoCardProps {
 export default function VideoCard({ video, index = 0 }: VideoCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [playerReady, setPlayerReady] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const plyrRef = useRef<any>(null);
 
   // Determine video type from URL extension or default to mp4
@@ -82,7 +82,7 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
       sources,
       poster: video.thumbnail,
     };
-  }, [video.url, video.thumbnail, video.qualities, getVideoType]);
+  }, [video, getVideoType]);
 
   const videoName = useMemo(
     () => videonames[index] || video.title || "Video",
@@ -108,7 +108,17 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
   }, [video.qualities]);
 
   const plyrOptions = useMemo(() => {
-    const baseOptions: any = {
+    const baseOptions: {
+      controls: string[];
+      settings: string[];
+      keyboard: { focused: boolean; global: boolean };
+      tooltips: { controls: boolean; seek: boolean };
+      clickToPlay: boolean;
+      hideControls: boolean;
+      resetOnEnd: boolean;
+      autoplay: boolean;
+      quality?: { default: number; options: number[]; forced: boolean };
+    } = {
       controls: [
         "play-large",
         "play",
@@ -148,7 +158,6 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
       console.log('🎥 VideoCard: URL changed to:', video.url);
       setIsLoading(true);
       setError(null);
-      setPlayerReady(false);
     } else {
       console.log('⚠️ VideoCard: No video URL provided');
     }
@@ -159,7 +168,7 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
     if (!videoSource) return;
     
     // Check for player instance - plyr-react exposes it as ref.current.plyr
-    const checkAndSetup = () => {
+    const checkAndSetup = (): (() => void) | false => {
       const player = plyrRef.current?.plyr;
       if (!player) {
         return false;
@@ -205,8 +214,8 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
       setError(null);
     };
     
-    const handleError = (e: any) => {
-      console.error('❌ VideoCard: Error occurred', e);
+    const handleError = () => {
+      console.error('❌ VideoCard: Error occurred');
       if (loadingTimeout) {
         clearTimeout(loadingTimeout);
         loadingTimeout = null;
@@ -257,9 +266,6 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
       player.on('canplay', handleCanPlay);
       player.on('error', handleError);
       
-      // Set playerReady to true
-      setPlayerReady(true);
-      
       return () => {
         if (loadingTimeout) {
           clearTimeout(loadingTimeout);
@@ -272,7 +278,7 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
     };
     
     // Try to setup immediately
-    const cleanup = checkAndSetup();
+    let cleanup: (() => void) | false = checkAndSetup();
     if (cleanup) {
       return cleanup;
     }
@@ -282,7 +288,7 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
     const maxAttempts = 50;
     const interval = setInterval(() => {
       attempts++;
-      const cleanup = checkAndSetup();
+      cleanup = checkAndSetup();
       if (cleanup || attempts >= maxAttempts) {
         clearInterval(interval);
         if (attempts >= maxAttempts && !cleanup) {

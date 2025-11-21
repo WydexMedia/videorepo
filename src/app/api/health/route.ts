@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import mongoose from 'mongoose';
 import os from 'os';
@@ -15,7 +15,7 @@ const checkDatabase = async () => {
       3: 'disconnecting',
     };
 
-    if (state === 1) {
+    if (state === 1 && mongoose.connection.db) {
       await mongoose.connection.db.admin().ping();
       return {
         status: 'healthy',
@@ -30,10 +30,11 @@ const checkDatabase = async () => {
         error: 'Database not connected',
       };
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Database check failed';
     return {
       status: 'unhealthy',
-      error: error.message || 'Database check failed',
+      error: errorMessage,
     };
   }
 };
@@ -95,7 +96,7 @@ const getProcessInfo = () => {
   };
 };
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     await connectDB();
 
@@ -103,7 +104,11 @@ export async function GET(req: NextRequest) {
       timestamp: new Date().toISOString(),
       status: 'checking',
       uptime: Date.now() - serverStartTime,
-      checks: {} as any,
+      checks: {} as {
+        database: { status: string; state?: string; host?: string; database?: string; error?: string };
+        memory: ReturnType<typeof getMemoryInfo>;
+        process: ReturnType<typeof getProcessInfo>;
+      },
     };
 
     checks.checks.database = await checkDatabase();
@@ -133,12 +138,13 @@ export async function GET(req: NextRequest) {
         { status: statusCode }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
       {
         status: 'error',
         message: 'Health check failed',
-        error: error.message || 'Unknown error',
+        error: errorMessage,
         timestamp: new Date().toISOString(),
       },
       { status: 503 }

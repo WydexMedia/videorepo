@@ -28,8 +28,9 @@ const connectFlowlineDB = async () => {
     }
 
     return flowlineConnection;
-  } catch (error: any) {
-    console.error('❌ Flowline Database Connection Error:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Flowline Database Connection Error:', errorMessage);
     return null;
   }
 };
@@ -63,13 +64,11 @@ const findFlowlineStudent = async (phoneNumber: string, phoneE164: string, phone
     const digitsOnly = phoneNumber.replace(/\D/g, '');
 
     let localNumber = phoneNumber;
-    let countryCode = '';
     if (phoneE164 && phoneE164.startsWith('+')) {
       const commonCountryCodes = ['+49', '+91', '+1', '+44', '+33', '+86', '+81', '+55', '+61'];
       for (const cc of commonCountryCodes) {
         if (phoneE164.startsWith(cc)) {
           localNumber = phoneE164.substring(cc.length);
-          countryCode = cc;
           break;
         }
       }
@@ -119,8 +118,9 @@ const findFlowlineStudent = async (phoneNumber: string, phoneE164: string, phone
     }).lean();
 
     return student;
-  } catch (error: any) {
-    console.error('Error finding Flowline student:', error.message);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error finding Flowline student:', errorMessage);
     return null;
   }
 };
@@ -153,7 +153,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { formattedNumber, countryCode: validatedCountryCode } = phoneValidation;
+    const { formattedNumber, countryCode: validatedCountryCode, phoneNumber: validatedPhoneNumber } = phoneValidation;
+    
+    if (!validatedPhoneNumber) {
+      return NextResponse.json(
+        {
+          status: 'error',
+          message: 'Invalid phone number format',
+          errors: ['INVALID_PHONE_NUMBER'],
+        },
+        { status: 400 }
+      );
+    }
 
     await connectDB();
 
@@ -172,7 +183,7 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       user = new User({
-        phoneNumber: phoneValidation.phoneNumber,
+        phoneNumber: validatedPhoneNumber,
         countryCode: validatedCountryCode,
         fullPhoneNumber: formattedNumber,
       });
@@ -194,30 +205,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    let studentName = null;
+    let studentName: string | null = null;
     try {
       const flowlineStudent = await findFlowlineStudent(
-        phoneValidation.phoneNumber,
+        validatedPhoneNumber,
         formattedNumber,
-        phoneValidation.phoneNumber.replace(/[^\d]/g, '')
+        validatedPhoneNumber.replace(/[^\d]/g, '')
       );
 
       if (flowlineStudent && flowlineStudent.fullName) {
         studentName = sanitizeName(flowlineStudent.fullName);
         logger.debug(`📚 Found Flowline student: ${studentName}`);
       }
-    } catch (error: any) {
-      console.error('Error fetching Flowline student:', error.message);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Error fetching Flowline student:', errorMessage);
     }
 
-    const responseData: any = {
-      phoneNumber: phoneValidation.phoneNumber,
+    const responseData: {
+      phoneNumber: string;
+      countryCode: string;
+      expiresIn: string;
+      studentName?: string;
+    } = {
+      phoneNumber: validatedPhoneNumber,
       countryCode: validatedCountryCode,
       expiresIn: '10 minutes',
     };
 
     if (studentName) {
-      responseData.name = escapeString(studentName);
+      (responseData as { phoneNumber: string; countryCode: string; expiresIn: string; studentName?: string; name?: string }).name = escapeString(studentName);
     }
 
     return NextResponse.json({
@@ -225,8 +242,9 @@ export async function POST(req: NextRequest) {
       message: 'OTP sent successfully',
       data: responseData,
     });
-  } catch (error: any) {
-    logger.error('Send OTP error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Send OTP error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',

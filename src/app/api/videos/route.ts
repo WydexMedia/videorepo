@@ -62,7 +62,7 @@ const extractVideoMetadata = (key: string) => {
   };
 };
 
-const findThumbnail = (videoKey: string, allObjects: any[]) => {
+const findThumbnail = (videoKey: string, allObjects: Array<{ Key?: string }>) => {
   const videoName = videoKey.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
   const videoPath = videoKey.substring(0, videoKey.lastIndexOf('/'));
   const thumbnailPaths = [
@@ -268,10 +268,11 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-  } catch (error: any) {
-    logger.error('Error fetching videos from S3:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error fetching videos from S3:', errorMessage);
 
-    if (error.name === 'NoSuchBucket') {
+    if (error instanceof Error && error.name === 'NoSuchBucket') {
       return NextResponse.json(
         {
           status: 'error',
@@ -282,7 +283,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    if (error.name === 'InvalidAccessKeyId' || error.name === 'SignatureDoesNotMatch') {
+    if (error instanceof Error && (error.name === 'InvalidAccessKeyId' || error.name === 'SignatureDoesNotMatch')) {
       return NextResponse.json(
         {
           status: 'error',

@@ -3,6 +3,7 @@ import { protect } from '@/lib/middleware/auth';
 import User from '@/models/User';
 import { sanitizeName, sanitizeEmail, sanitizePlace, safeProfileForOutput, safePreferences } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
+import { IUser } from '@/models/User';
 
 export async function PUT(req: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { firstName, lastName, email, place } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, string> = {};
 
     if (firstName) {
       const sanitized = sanitizeName(firstName);
@@ -90,7 +91,7 @@ export async function PUT(req: NextRequest) {
       updateData['profile.place'] = sanitized;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(user._id, { $set: updateData }, { new: true, runValidators: true })
+    const updatedUser = await User.findByIdAndUpdate((user as IUser)._id, { $set: updateData }, { new: true, runValidators: true })
       .select('-otp -otpExpires')
       .lean();
 
@@ -111,8 +112,9 @@ export async function PUT(req: NextRequest) {
         },
       },
     });
-  } catch (error: any) {
-    logger.error('Update profile error:', error.message || 'Unknown error');
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Update profile error:', errorMessage);
     return NextResponse.json(
       {
         status: 'error',
