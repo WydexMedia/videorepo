@@ -1,6 +1,6 @@
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-// API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+// API Configuration - Now using local Next.js API routes
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 // API Response Types
 export interface ApiResponse<T = any> {

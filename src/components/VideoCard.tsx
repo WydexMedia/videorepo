@@ -43,8 +43,11 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
 
   const videoSource = useMemo(() => {
     if (!video.url) {
+      console.log('⚠️ VideoCard: No video URL in video object:', video);
       return null;
     }
+    
+    console.log('🎥 VideoCard: Building video source for:', video.url);
 
     // If multiple qualities are provided, expose them as separate sources
     const sources: Array<{ src: string; type: string; size?: number }> = [];
@@ -142,37 +145,81 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
   // Reset states when video URL changes
   useEffect(() => {
     if (video.url) {
+      console.log('🎥 VideoCard: URL changed to:', video.url);
       setIsLoading(true);
       setError(null);
       setPlayerReady(false);
+    } else {
+      console.log('⚠️ VideoCard: No video URL provided');
     }
   }, [video.url]);
 
   // Set up Plyr event listeners when player is ready
   useEffect(() => {
-    const player = plyrRef.current?.plyr;
-    if (!player || !playerReady) return;
+    if (!videoSource) return;
+    
+    // Check for player instance - plyr-react exposes it as ref.current.plyr
+    const checkAndSetup = () => {
+      const player = plyrRef.current?.plyr;
+      if (!player) {
+        return false;
+      }
+      
+      console.log('🎬 VideoCard: Player found, setting up listeners for:', video.url);
+      let loadingTimeout: NodeJS.Timeout | null = null;
     
     const handleReady = () => {
+      console.log('✅ VideoCard: Player ready');
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
       setIsLoading(false);
       setError(null);
     };
     
     const handleLoadStart = () => {
+      console.log('🔄 VideoCard: Load started');
       setIsLoading(true);
       setError(null);
+      
+      // Set timeout to prevent infinite loading
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+      loadingTimeout = setTimeout(() => {
+        console.log('⏱️ VideoCard: Loading timeout reached');
+        setIsLoading(false);
+        setError('Video is taking too long to load. Please check the URL and CORS settings.');
+        loadingTimeout = null;
+      }, 30000); // 30 second timeout
     };
     
     const handleCanPlay = () => {
+      console.log('▶️ VideoCard: Can play');
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
       setIsLoading(false);
       setError(null);
     };
     
     const handleError = (e: any) => {
+      console.error('❌ VideoCard: Error occurred', e);
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+        loadingTimeout = null;
+      }
       const videoElement = player.media as HTMLVideoElement | null;
       if (videoElement?.error) {
         const videoError = videoElement.error;
         let errorMessage = 'Unknown error';
+        
+        console.error('Video error details:', {
+          code: videoError.code,
+          message: videoError.message,
+        });
         
         switch (videoError.code) {
           case MediaError.MEDIA_ERR_ABORTED:
@@ -206,24 +253,52 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
       player.once('ready', handleReady);
     }
     
-    player.on('loadstart', handleLoadStart);
-    player.on('canplay', handleCanPlay);
-    player.on('error', handleError);
+      player.on('loadstart', handleLoadStart);
+      player.on('canplay', handleCanPlay);
+      player.on('error', handleError);
+      
+      // Set playerReady to true
+      setPlayerReady(true);
+      
+      return () => {
+        if (loadingTimeout) {
+          clearTimeout(loadingTimeout);
+        }
+        player.off('ready', handleReady);
+        player.off('loadstart', handleLoadStart);
+        player.off('canplay', handleCanPlay);
+        player.off('error', handleError);
+      };
+    };
+    
+    // Try to setup immediately
+    const cleanup = checkAndSetup();
+    if (cleanup) {
+      return cleanup;
+    }
+    
+    // If not ready, check periodically (max 5 seconds)
+    let attempts = 0;
+    const maxAttempts = 50;
+    const interval = setInterval(() => {
+      attempts++;
+      const cleanup = checkAndSetup();
+      if (cleanup || attempts >= maxAttempts) {
+        clearInterval(interval);
+        if (attempts >= maxAttempts && !cleanup) {
+          console.warn('⚠️ VideoCard: Player did not initialize after 5 seconds');
+        }
+      }
+    }, 100);
     
     return () => {
-      player.off('ready', handleReady);
-      player.off('loadstart', handleLoadStart);
-      player.off('canplay', handleCanPlay);
-      player.off('error', handleError);
+      clearInterval(interval);
+      if (typeof cleanup === 'function') {
+        cleanup();
+      }
     };
-  }, [playerReady, video.url]);
+  }, [video.url, videoSource]);
 
-  // Set player ready when Plyr instance is available
-  useEffect(() => {
-    if (plyrRef.current?.plyr && !playerReady) {
-      setPlayerReady(true);
-    }
-  }, [playerReady]);
 
   if (!videoSource) {
     return (

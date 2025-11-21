@@ -49,21 +49,49 @@ export default function HomePage() {
 
       try {
         // Try to fetch videos from API
+        console.log('🎬 Fetching videos from API...');
         const response = await api.getVideos(token || undefined);
+        console.log('📦 API Response:', response);
         
-        if (response.status === 'success' && response.data) {
+        if (response.status === 'success' && response.data && response.data.length > 0) {
+          console.log('✅ Videos loaded from API:', response.data.length, 'videos');
+          console.log('📹 Video URLs:', response.data.map(v => v.url));
           setVideos(response.data);
         } else {
-          // Fallback: Use direct S3 URLs from config file
-          setVideos(S3_VIDEOS);
+          console.log('⚠️ No videos from API, checking config fallback...');
+          // Fallback: Use direct S3 URLs from config file only if they're not placeholders
+          const validConfigVideos = S3_VIDEOS.filter(
+            (video) => video.url && !video.url.includes('your-bucket')
+          );
+          console.log('📋 Config videos:', validConfigVideos.length, 'valid videos');
+          if (validConfigVideos.length > 0) {
+            console.log('✅ Using config videos:', validConfigVideos.map(v => v.url));
+            setVideos(validConfigVideos);
+          } else {
+            // No valid videos - show empty state
+            console.log('❌ No valid videos found in config');
+            setVideos([]);
+            toast.info('No videos configured. Please set up S3 or add video URLs in config.');
+          }
         }
       } catch (error) {
-        console.error('Error fetching videos:', error);
-        // Fallback to direct S3 URLs from config file on error
-        setVideos(S3_VIDEOS);
-        toast.error('Could not load videos from server. Using configured S3 URLs.');
+        console.error('❌ Error fetching videos:', error);
+        // Fallback to direct S3 URLs from config file only if they're not placeholders
+        const validConfigVideos = S3_VIDEOS.filter(
+          (video) => video.url && !video.url.includes('your-bucket')
+        );
+        if (validConfigVideos.length > 0) {
+          console.log('✅ Using config videos as fallback:', validConfigVideos.map(v => v.url));
+          setVideos(validConfigVideos);
+          toast.warning('Could not load videos from server. Using configured S3 URLs.');
+        } else {
+          console.log('❌ No valid videos available');
+          setVideos([]);
+          toast.error('No videos available. Please configure S3 or add video URLs.');
+        }
       } finally {
         setIsLoadingVideos(false);
+        console.log('🏁 Finished loading videos');
       }
     };
 
