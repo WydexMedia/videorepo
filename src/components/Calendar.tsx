@@ -60,34 +60,36 @@ function Calendar({ selectedDate, onDateSelect }: CalendarProps) {
   }, []);
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 sm:p-6 bg-gradient-to-br from-white to-blue-50/30 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
         <button
           onClick={prevMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 hover:bg-blue-100 rounded-lg transition-colors group"
+          aria-label="Previous month"
         >
-          <ChevronLeft className="w-5 h-5 text-gray-600" />
+          <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-blue-600" />
         </button>
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h3>
         <button
           onClick={nextMonth}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 hover:bg-blue-100 rounded-lg transition-colors group"
+          aria-label="Next month"
         >
-          <ChevronRight className="w-5 h-5 text-gray-600" />
+          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-blue-600" />
         </button>
       </div>
 
       {/* Calendar Grid */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {/* Week Days */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1 sm:mb-2">
           {weekDates.map((date) => (
             <div
               key={`label-${date.toDateString()}`}
-              className="text-center text-sm font-medium text-gray-600 py-2"
+              className="text-center text-[10px] sm:text-sm font-semibold text-gray-500 py-1 sm:py-2"
             >
               {weekDayLabels[date.getDay()]}
             </div>
@@ -95,7 +97,7 @@ function Calendar({ selectedDate, onDateSelect }: CalendarProps) {
         </div>
 
         {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2">
           {weekDates.map((date) => {
             const isSelected =
               internalSelectedDate &&
@@ -103,13 +105,13 @@ function Calendar({ selectedDate, onDateSelect }: CalendarProps) {
             const isToday = date.toDateString() === today.toDateString();
 
             const baseClasses =
-              "aspect-square flex items-center justify-center rounded-xl text-base font-medium transition-all duration-200";
+              "aspect-square flex items-center justify-center rounded-lg sm:rounded-xl text-xs sm:text-base font-semibold transition-all duration-200 cursor-pointer";
 
             const stateClasses = isSelected
-              ? "bg-blue-600 text-white shadow-md"
+              ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg scale-105 ring-2 ring-blue-300"
               : isToday
-                ? "bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900 dark:text-blue-100 dark:border-blue-700"
-                : "bg-gray-50 text-gray-700 hover:bg-gray-100 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700";
+                ? "bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 border-2 border-blue-400 font-bold"
+                : "bg-white text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:scale-105 border border-gray-200 hover:border-blue-300 hover:shadow-md";
 
             return (
               <button
@@ -120,6 +122,7 @@ function Calendar({ selectedDate, onDateSelect }: CalendarProps) {
                   onDateSelect?.(newDate);
                 }}
                 className={`${baseClasses} ${stateClasses}`}
+                aria-label={`Select ${date.toLocaleDateString()}`}
               >
                 {date.getDate().toString().padStart(2, "0")}
               </button>
@@ -128,43 +131,16 @@ function Calendar({ selectedDate, onDateSelect }: CalendarProps) {
         </div>
       </div>
 
-      {/* Community Growth */}
-      <div className="mt-8 pt-6 border-t">
-        <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-semibold text-gray-900">Community growth</h4>
-          <div className="relative w-16 h-16">
-            <svg className="w-16 h-16 transform -rotate-90">
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="#E5E7EB"
-                strokeWidth="6"
-                fill="none"
-              />
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="#6366F1"
-                strokeWidth="6"
-                fill="none"
-                strokeDasharray="175.93"
-                strokeDashoffset="43.98"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-bold text-gray-900">62%</span>
-            </div>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 text-sm text-green-600">
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-          <span className="font-medium">Increase to 19.6%</span>
-        </div>
+      {/* Course Info */}
+      <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
+        <h4 className="text-sm sm:text-base font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500"></span>
+          Resin Art Course
+        </h4>
+        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+          Learn professional resin art techniques including mixing, pouring, curing, and finishing. 
+          Master creating beautiful resin artworks from beginner to advanced level.
+        </p>
       </div>
     </Card>
   );

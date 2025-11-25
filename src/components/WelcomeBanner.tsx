@@ -2,7 +2,6 @@
 
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
 
 interface WelcomeBannerProps {
   userName: string;
@@ -11,58 +10,39 @@ interface WelcomeBannerProps {
 
 function WelcomeBanner({ userName, progress }: WelcomeBannerProps) {
   return (
-    <Card className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-500 border-none overflow-hidden relative">
-      <div className="p-8 flex items-center justify-between">
+    <Card className="bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 border-none overflow-hidden relative shadow-xl hover:shadow-2xl transition-shadow duration-300">
+      <div className="p-4 sm:p-6 lg:p-8">
         {/* Left Content */}
-        <div className="flex-1 text-white z-10">
-          <h1 className="text-3xl font-bold mb-2">Welcome back, {userName}!</h1>
-          <p className="text-blue-50 mb-6">
-            You&apos;ve learned {progress}% of your goal this week Keep it<br />up and improve your progress!
-          </p>
-          <button className="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-all duration-200 border border-white/30">
-            GO BACK TO THE LESSONS
-            <ArrowRight className="w-5 h-5" />
-          </button>
+        <div className="flex-1 text-white z-10 space-y-3 sm:space-y-4">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
+            Welcome back, <span className="text-yellow-300">{userName}</span>!
+          </h1>
+          <div className="space-y-2">
+            <p className="text-blue-50 text-base sm:text-lg lg:text-xl font-bold">
+              Complete Resin Art Course: Zero to Hero
+            </p>
+            <p className="text-blue-100 text-xs sm:text-sm lg:text-base leading-relaxed max-w-xl">
+              Master the art of resin crafting from basics to advanced techniques. Learn mixing, pouring, curing, and finishing professional resin artworks.
+            </p>
+          </div>
 
           {/* Progress Indicator */}
-          <div className="flex gap-2 mt-6">
-            <div className="w-12 h-1 bg-white rounded-full"></div>
-            <div className="w-12 h-1 bg-white/30 rounded-full"></div>
-            <div className="w-12 h-1 bg-white/30 rounded-full"></div>
-          </div>
-        </div>
-
-        {/* Right Image */}
-        <div className="relative z-10">
-          <div className="relative w-64 h-48">
-            {/* Books Stack */}
-            <div className="absolute right-0 bottom-0">
-              {/* Bottom Book */}
-              <div className="relative">
-                <div className="w-48 h-16 bg-blue-100 rounded-lg shadow-xl transform perspective-1000"
-                     style={{ transform: "rotateX(5deg) rotateY(-5deg)" }}>
-                  <div className="absolute top-2 left-4 w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white/80 rounded"></div>
-                  </div>
-                </div>
-
-                {/* Top Book */}
-                <div className="absolute -top-8 left-8 w-48 h-20 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg shadow-2xl transform"
-                     style={{ transform: "rotateX(-5deg) rotateZ(-10deg)" }}>
-                  <div className="absolute top-0 right-0 w-full h-6 bg-red-600 rounded-t-lg"></div>
-                </div>
-              </div>
-            </div>
+          <div className="flex gap-2 pt-2 sm:pt-4">
+            <div className="w-8 sm:w-12 h-1 sm:h-1.5 bg-white rounded-full shadow-lg"></div>
+            <div className="w-8 sm:w-12 h-1 sm:h-1.5 bg-white/30 rounded-full"></div>
+            <div className="w-8 sm:w-12 h-1 sm:h-1.5 bg-white/30 rounded-full"></div>
           </div>
         </div>
 
         {/* Background Decoration */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/5 rounded-full -mr-48 -mt-48"></div>
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-600/10 rounded-full -ml-32 -mb-32"></div>
+        <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-white/5 rounded-full -mr-32 sm:-mr-48 -mt-32 sm:-mt-48"></div>
+        <div className="absolute bottom-0 left-0 w-48 sm:w-64 h-48 sm:h-64 bg-purple-600/10 rounded-full -ml-24 sm:-ml-32 -mb-24 sm:-mb-32"></div>
       </div>
     </Card>
   );
 }
 
 export default memo(WelcomeBanner);
+
+
 

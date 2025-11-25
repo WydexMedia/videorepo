@@ -43,47 +43,47 @@ function DashboardHeader({
   }, [memberSince]);
 
   return (
-    <header className="bg-card border-b border-border px-8 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-card border-b border-border px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Search */}
         <div className="flex-1 max-w-md">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               type="text"
               placeholder="Search.."
-              className="w-full pl-10 pr-4 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
+              className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 text-sm sm:text-base border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder:text-muted-foreground"
             />
           </div>
         </div>
 
         {/* Right Side Actions */}
-        <div className="flex items-center gap-4 ml-6">
+        <div className="flex items-center gap-2 sm:gap-4 ml-2 sm:ml-6">
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-muted rounded-lg transition-colors"
             aria-label="Toggle theme"
           >
             {isDark ? (
-              <SunMedium className="w-5 h-5 text-gray-600" />
+              <SunMedium className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             ) : (
-              <Moon className="w-5 h-5 text-gray-600" />
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
             )}
           </button>
 
           {/* Notifications */}
-          <button className="p-2 hover:bg-muted rounded-lg transition-colors">
-            <Bell className="w-5 h-5 text-gray-600" />
+          <button className="p-1.5 sm:p-2 hover:bg-muted rounded-lg transition-colors">
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </button>
 
           {/* User Avatar / Profile Popup */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                <Avatar className="w-9 h-9 cursor-pointer">
+                <Avatar className="w-8 h-8 sm:w-9 sm:h-9 cursor-pointer">
                   <AvatarImage src={userAvatar} alt={userName} />
-                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-white text-sm sm:text-base">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -91,19 +91,19 @@ function DashboardHeader({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-64 mt-2 shadow-xl border border-gray-200"
+              className="w-56 sm:w-64 mt-2 shadow-xl border border-gray-200"
             >
-              <DropdownMenuLabel className="flex items-center gap-3">
-                <Avatar className="w-9 h-9">
+              <DropdownMenuLabel className="flex items-center gap-2 sm:gap-3">
+                <Avatar className="w-8 h-8 sm:w-9 sm:h-9">
                   <AvatarImage src={userAvatar} alt={userName} />
-                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-white">
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-orange-500 text-white text-sm sm:text-base">
                     {userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-semibold text-gray-900">{userName}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{userName}</p>
                   {phoneNumber && (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 truncate">
                       +{countryCode} {phoneNumber}
                     </p>
                   )}
@@ -111,8 +111,8 @@ function DashboardHeader({
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="flex items-center gap-2 text-gray-700 cursor-default">
-                <User className="w-4 h-4 text-gray-500" />
-                <div className="flex flex-col">
+                <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <div className="flex flex-col min-w-0">
                   <span className="text-xs font-medium">Account</span>
                   {formattedMemberSince && (
                     <span className="text-[11px] text-gray-500">
@@ -126,7 +126,7 @@ function DashboardHeader({
                 onClick={() => onLogout?.()}
                 className="flex items-center gap-2 text-red-600 focus:bg-red-50 cursor-pointer"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 flex-shrink-0" />
                 <span className="text-sm font-medium">Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>

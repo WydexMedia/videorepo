@@ -156,35 +156,35 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
   }, [phoneData]);
 
   return (
-    <div className="w-full max-w-md space-y-6">
+    <div className="w-full max-w-md mx-auto px-4 sm:px-6 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors mb-4"
+          className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors mb-2 sm:mb-4 text-sm sm:text-base"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
           Verify OTP
         </h1>
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 text-xs sm:text-sm px-2">
           Enter the 6-digit code sent to{" "}
-          <span className="font-medium">
+          <span className="font-medium break-all">
             {phoneData.countryCode} {phoneData.phoneNumber}
           </span>
         </p>
       </div>
 
       {/* OTP Input */}
-      <div className="space-y-4">
-        <Label className="text-gray-700 font-medium text-sm">
+      <div className="space-y-3 sm:space-y-4">
+        <Label className="text-gray-700 font-medium text-xs sm:text-sm">
           Verification Code
         </Label>
         
-        <div className="flex gap-2 justify-center">
+        <div className="flex gap-1.5 sm:gap-2 justify-center px-2">
           {otp.map((digit, index) => (
             <Input
               key={index}
@@ -196,14 +196,14 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
               onChange={(e) => handleOtpChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
               onPaste={handlePaste}
-              className="w-12 h-12 text-center text-lg font-semibold border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+              className="w-10 h-10 sm:w-12 sm:h-12 text-center text-base sm:text-lg font-semibold border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
             />
           ))}
         </div>
 
         {/* Error Message */}
         {error && (
-          <p className="text-xs text-red-500 bg-red-50 p-2 rounded text-center">
+          <p className="text-xs text-red-500 bg-red-50 p-2 rounded text-center mx-2">
             {error}
           </p>
         )}
@@ -213,7 +213,7 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
       <Button
         onClick={() => handleVerifyOTP(otp.join(""))}
         disabled={otp.join("").length !== 6 || isLoading}
-        className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-11 sm:h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-sm sm:text-base font-semibold shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <>
@@ -231,12 +231,12 @@ export default function OTPVerification({ phoneData, onBack, onSuccess }: OTPVer
           <button
             onClick={handleResendOTP}
             disabled={isLoading}
-            className="text-blue-600 hover:text-blue-700 font-medium transition-colors disabled:opacity-50"
+            className="text-blue-600 hover:text-blue-700 font-medium transition-colors disabled:opacity-50 text-sm sm:text-base"
           >
             Resend OTP
           </button>
         ) : (
-          <p className="text-gray-500 text-sm">
+          <p className="text-gray-500 text-xs sm:text-sm">
             Resend OTP in {countdown} seconds
           </p>
         )}

@@ -308,16 +308,16 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
 
   if (!videoSource) {
     return (
-      <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white">
+      <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 hover:border-blue-300">
         <CardContent className="p-0">
-          <div className="relative w-full aspect-video bg-black flex items-center justify-center">
-            <div className="text-center p-4">
-              <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-sm text-red-600">{error || 'Invalid video source'}</p>
+          <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center">
+            <div className="text-center p-3 sm:p-4">
+              <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-400 mx-auto mb-2" />
+              <p className="text-xs sm:text-sm text-red-400 px-2">{error || 'Invalid video source'}</p>
             </div>
           </div>
-          <div className="p-4">
-            <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2">
+          <div className="p-3 sm:p-4">
+            <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-1 line-clamp-2">
               {video.title}
             </h3>
           </div>
@@ -327,20 +327,23 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-white">
+    <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 bg-white border border-gray-200 hover:border-blue-300 group">
       <CardContent className="p-0">
-        <div className="relative w-full aspect-video bg-black">
+        <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 to-gray-800 overflow-hidden">
           {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
-              <Loader2 className="w-8 h-8 animate-spin text-white" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10">
+              <div className="text-center">
+                <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 animate-spin text-white mx-auto mb-2" />
+                <p className="text-xs text-white/80">Loading video...</p>
+              </div>
             </div>
           )}
           {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
-              <div className="text-center p-4">
-                <AlertCircle className="w-6 h-6 text-red-400 mx-auto mb-2" />
-                <p className="text-xs text-red-400">{error}</p>
-                <p className="text-xs text-gray-400 mt-1">Check CORS settings on S3 bucket</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/90 z-10">
+              <div className="text-center p-3 sm:p-4 max-w-xs">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 mx-auto mb-2" />
+                <p className="text-xs text-red-400 mb-1">{error}</p>
+                <p className="text-[10px] sm:text-xs text-gray-400">Check CORS settings on S3 bucket</p>
               </div>
             </div>
           )}
@@ -353,12 +356,15 @@ export default function VideoCard({ video, index = 0 }: VideoCardProps) {
           )}
         </div>
         
-        <div className="p-4">
-          <h3 className="font-semibold text-lg text-gray-900 mb-1 line-clamp-2">
+        <div className="p-3 sm:p-4 bg-gradient-to-b from-white to-gray-50 group-hover:from-blue-50 group-hover:to-white transition-colors duration-300">
+          <h3 className="font-semibold text-base sm:text-lg text-gray-900 mb-1 line-clamp-2 group-hover:text-blue-700 transition-colors">
             {videoName}
           </h3>
           {video.duration && (
-            <p className="text-sm text-gray-500">{video.duration}</p>
+            <p className="text-xs sm:text-sm text-gray-500 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              {video.duration}
+            </p>
           )}
         </div>
       </CardContent>
